@@ -49,7 +49,7 @@ def main():
     for model_name in MODEL_NAMES:
         print(f"\n--- Loading and benchmarking model: {model_name} ---")
         model = SentenceTransformer(model_name)
-        model.device("cuda")
+        model.to(device="cuda")
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         results_for_model = {}
