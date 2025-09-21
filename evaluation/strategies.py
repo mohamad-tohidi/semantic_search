@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Literal
 
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
@@ -13,7 +14,13 @@ class LongTextStrategy(ABC):
     """
 
     @abstractmethod
-    def embed(self, text: str, model: SentenceTransformer, tokenizer) -> np.ndarray:
+    def embed(
+        self,
+        text: str,
+        model: SentenceTransformer,
+        tokenizer,
+        embedding_type: Literal["query", "document"] = "document",
+    ) -> np.ndarray:
         """
         The contract for all concrete strategy classes.
 
@@ -21,6 +28,8 @@ class LongTextStrategy(ABC):
             text (str): The long text to embed.
             model (SentenceTransformer): The pre-loaded Sentence Transformer model.
             tokenizer: The tokenizer associated with the model.
+            embedding_type (Literal["query", "document"]): Specifies whether to embed as 'query' or 'document'.
+                          Defaults to 'document'. For symmetric models, this is ignored.
 
         Returns:
             np.ndarray: The resulting embedding vector.
@@ -37,7 +46,13 @@ class TruncationStrategy(LongTextStrategy):
     This is the default behavior of many transformer models.
     """
 
-    def embed(self, text: str, model: SentenceTransformer, tokenizer) -> np.ndarray:
+    def embed(
+        self,
+        text: str,
+        model: SentenceTransformer,
+        tokenizer,
+        embedding_type: Literal["query", "document"] = "document",
+    ) -> np.ndarray:
         """
         Generates an embedding by truncating the input text.
 
@@ -45,13 +60,20 @@ class TruncationStrategy(LongTextStrategy):
             text (str): The long text to embed.
             model (SentenceTransformer): The model to use for encoding.
             tokenizer: The tokenizer (not directly used, as model.encode handles it).
+            embedding_type (Literal["query", "document"]): 'query' or 'document'.
 
         Returns:
             np.ndarray: A single embedding vector for the truncated text.
         """
-        print("--> Using Truncation Strategy")
-        # SentenceTransformer's .encode() method handles truncation automatically.
-        return model.encode(text)
+        print(f"--> Using Truncation Strategy for {embedding_type}")
+
+        if embedding_type == "query" and hasattr(model, "encode_query"):
+            return model.encode_query(text)
+        elif embedding_type == "document" and hasattr(model, "encode_document"):
+            return model.encode_document([text])[0]
+        else:
+            # Fallback to standard encode (with optional prefix if needed)
+            return model.encode(text)
 
 
 class ChunkAndAverageStrategy(LongTextStrategy):
@@ -75,7 +97,13 @@ class ChunkAndAverageStrategy(LongTextStrategy):
         self.chunk_size = chunk_size
         self.overlap_size = overlap_size
 
-    def embed(self, text: str, model: SentenceTransformer, tokenizer) -> np.ndarray:
+    def embed(
+        self,
+        text: str,
+        model: SentenceTransformer,
+        tokenizer,
+        embedding_type: Literal["query", "document"] = "document",
+    ) -> np.ndarray:
         """
         Generates an embedding by chunking the text and averaging the embeddings.
 
@@ -83,17 +111,19 @@ class ChunkAndAverageStrategy(LongTextStrategy):
             text (str): The long text to embed.
             model (SentenceTransformer): The model to use for encoding.
             tokenizer: The tokenizer used to split text into tokens.
+            embedding_type (Literal["query", "document"]): 'query' or 'document'.
 
         Returns:
             np.ndarray: A single, averaged embedding vector for the entire text.
         """
         print(
-            f"--> Using Chunk and Average Strategy (Chunk: {self.chunk_size}, Overlap: {self.overlap_size})"
+            f"--> Using Chunk and Average Strategy (Chunk: {self.chunk_size}, Overlap: {self.overlap_size}) for {embedding_type}"
         )
 
         # Tokenize the entire text without truncation
+        print("tokenizing")
         tokens = tokenizer.tokenize(text)
-
+        print("end of tokenizing")
         # Create text chunks from tokens
         text_chunks = []
         step = self.chunk_size - self.overlap_size
@@ -104,14 +134,36 @@ class ChunkAndAverageStrategy(LongTextStrategy):
 
         if not text_chunks:
             # Handle case where text is shorter than a chunk
-            return model.encode(text)
+            return self._encode_single(text, model, embedding_type)
 
-        # Get embeddings for all chunks. The model can process a list of sentences.
-        chunk_embeddings = model.encode(text_chunks)
+        # Get embeddings for all chunks using the appropriate method
+        if embedding_type == "query" and hasattr(model, "encode_query"):
+            chunk_embeddings = np.array(
+                [model.encode_query(chunk) for chunk in text_chunks]
+            )
+        elif embedding_type == "document" and hasattr(model, "encode_document"):
+            chunk_embeddings = model.encode_document(text_chunks)
+        else:
+            # Fallback to standard encode
+            chunk_embeddings = model.encode(text_chunks)
 
         # Average the embeddings to get a single vector representation
         avg_embedding = np.mean(chunk_embeddings, axis=0)
         return avg_embedding
+
+    def _encode_single(
+        self,
+        text: str,
+        model: SentenceTransformer,
+        embedding_type: Literal["query", "document"],
+    ) -> np.ndarray:
+        """Helper to encode a single short text."""
+        if embedding_type == "query" and hasattr(model, "encode_query"):
+            return model.encode_query(text)
+        elif embedding_type == "document" and hasattr(model, "encode_document"):
+            return model.encode_document([text])[0]
+        else:
+            return model.encode(text)
 
 
 # --- 3. Define the Context Class that Uses a Strategy ---
@@ -136,7 +188,13 @@ class LongTextEmbedder:
         print(f"\nSwitching strategy to: {strategy.__class__.__name__}")
         self._strategy = strategy
 
-    def embed(self, text: str, model: SentenceTransformer, tokenizer) -> np.ndarray:
+    def embed(
+        self,
+        text: str,
+        model: SentenceTransformer,
+        tokenizer,
+        embedding_type: Literal["query", "document"] = "document",
+    ) -> np.ndarray:
         """
         Delegates the embedding task to the current strategy object.
 
@@ -144,11 +202,12 @@ class LongTextEmbedder:
             text (str): The long text to embed.
             model (SentenceTransformer): The model to use.
             tokenizer: The tokenizer to use.
+            embedding_type (Literal["query", "document"]): 'query' or 'document'.
 
         Returns:
             np.ndarray: The final embedding vector.
         """
-        return self._strategy.embed(text, model, tokenizer)
+        return self._strategy.embed(text, model, tokenizer, embedding_type)
 
 
 # --- 4. Example Usage ---
@@ -169,21 +228,19 @@ if __name__ == "__main__":
     # --- Strategy 1: Truncation (the baseline) ---
     truncation_strategy = TruncationStrategy()
     embedder = LongTextEmbedder(truncation_strategy)
-    embedding1 = embedder.embed(long_text, model, tokenizer)
+    embedding1 = embedder.embed(long_text, model, tokenizer, embedding_type="document")
     print(f"Embedding shape from Truncation: {embedding1.shape}")
 
     # --- Strategy 2: Chunking with large overlap ---
-    # Good for preserving context, but more computationally expensive.
     chunking_strategy_1 = ChunkAndAverageStrategy(chunk_size=512, overlap_size=128)
     embedder.set_strategy(chunking_strategy_1)
-    embedding2 = embedder.embed(long_text, model, tokenizer)
+    embedding2 = embedder.embed(long_text, model, tokenizer, embedding_type="document")
     print(f"Embedding shape from Chunking (512/128): {embedding2.shape}")
 
     # --- Strategy 3: Chunking with smaller overlap and smaller chunks ---
-    # Faster than the above, but might lose some context at the seams.
     chunking_strategy_2 = ChunkAndAverageStrategy(chunk_size=256, overlap_size=32)
     embedder.set_strategy(chunking_strategy_2)
-    embedding3 = embedder.embed(long_text, model, tokenizer)
+    embedding3 = embedder.embed(long_text, model, tokenizer, embedding_type="document")
     print(f"Embedding shape from Chunking (256/32): {embedding3.shape}")
 
     # You can now compare the embeddings
@@ -192,3 +249,8 @@ if __name__ == "__main__":
     cos_sim_2_3 = util.cos_sim(embedding2, embedding3).item()
     print(f"Similarity between Truncation and Chunking(512/128): {cos_sim_1_2:.4f}")
     print(f"Similarity between two Chunking strategies: {cos_sim_2_3:.4f}")
+
+    # Example with query embedding
+    query = "What is the strategy pattern?"
+    query_embedding = embedder.embed(query, model, tokenizer, embedding_type="query")
+    print(f"\nQuery embedding shape: {query_embedding.shape}")

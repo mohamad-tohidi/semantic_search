@@ -66,22 +66,23 @@ def plot_results(results: Dict[str, Dict[str, float]]):
 
 
 # --- Example Usage ---
-sample_results = {
-    "Model_A": {
-        "Truncation": 0.854,
-        "Chunk (Size: 512, Overlap: 64)": 0.791,
-        "Chunk (Size: 384, Overlap: 64)": 0.923,
-    },
-    "Model_B": {
-        "Truncation": 0.750,
-        "Chunk (Size: 512, Overlap: 64)": 0.820,
-        "Chunk (Size: 384, Overlap: 64)": 0.880,
-    },
-    "Model_C": {
-        "Truncation": 0.650,
-        "Chunk (Size: 512, Overlap: 64)": 0.720,
-        "Chunk (Size: 384, Overlap: 64)": 0.810,
-    },
-}
+if __name__ == "__main__":
+    sample_results = {
+        "Model_A": {
+            "Truncation": 0.854,
+            "Chunk (Size: 512, Overlap: 64)": 0.791,
+            "Chunk (Size: 384, Overlap: 64)": 0.923,
+        },
+        "Model_B": {
+            "Truncation": 0.750,
+            "Chunk (Size: 512, Overlap: 64)": 0.820,
+            "Chunk (Size: 384, Overlap: 64)": 0.880,
+        },
+        "Model_C": {
+            "Truncation": 0.650,
+            "Chunk (Size: 512, Overlap: 64)": 0.720,
+            "Chunk (Size: 384, Overlap: 64)": 0.810,
+        },
+    }
 
-plot_results(sample_results)
+    plot_results(sample_results)

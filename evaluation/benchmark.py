@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
@@ -63,6 +63,7 @@ def embed_corpus(
     strategy: LongTextStrategy,
     model: SentenceTransformer,
     tokenizer: AutoTokenizer,
+    embedding_type: Literal["query", "document"] = "document",
 ) -> Dict[str, np.ndarray]:
     """
     Embeds the entire corpus of documents using a given strategy.
@@ -74,7 +75,9 @@ def embed_corpus(
     for doc_id, text in tqdm(
         documents.items(), desc=f"Embedding Corpus with {strategy.__class__.__name__}"
     ):
-        doc_embeddings[doc_id] = strategy.embed(text, model, tokenizer)
+        doc_embeddings[doc_id] = strategy.embed(
+            text, model, tokenizer, embedding_type=embedding_type
+        )
     return doc_embeddings
 
 
@@ -98,7 +101,7 @@ def run_search_and_evaluate(
         ground_truth_id = query_info["source_doc_id"]
 
         # Embed the query (queries are short, no strategy needed)
-        query_embedding = model.encode(query_text, normalize_embeddings=True)
+        query_embedding = model.encode_query(query_text, normalize_embeddings=True)
 
         # Perform semantic search
         hits = util.semantic_search(query_embedding, corpus_embeddings, top_k=k)[0]

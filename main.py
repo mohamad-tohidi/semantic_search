@@ -23,7 +23,7 @@ def main():
     ]
     DATA_DIR = "./test_dataset"
     QUERIES_PATH = "./test_dataset/queries.jsonl"
-    NDCG_K = 3
+    NDCG_K = 10
 
     # --- 1. Load Data ---
     if os.path.exists(DATA_DIR) and os.path.exists(QUERIES_PATH):
