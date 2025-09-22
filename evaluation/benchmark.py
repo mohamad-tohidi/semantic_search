@@ -80,6 +80,46 @@ def embed_corpus(
         )
     return doc_embeddings
 
+def embed_corpus_batch(
+    documents: Dict[str, str],
+    strategy: LongTextStrategy,
+    model: SentenceTransformer,
+    tokenizer: AutoTokenizer,
+    embedding_type: Literal["query", "document"] = "document",
+    batch_size: int = 32,
+) -> Dict[str, np.ndarray]:
+    """
+    Embeds the entire corpus of documents using a given strategy in batch mode for performance.
+
+    Args:
+        documents (Dict[str, str]): A dictionary of document IDs to text content.
+        strategy (LongTextStrategy): The strategy to use for handling long texts.
+        model (SentenceTransformer): The Sentence Transformer model.
+        tokenizer (AutoTokenizer): The tokenizer for the model.
+        embedding_type (Literal["query", "document"], optional): Type of embedding. Defaults to "document".
+        batch_size (int, optional): The number of texts to process at once. Tune for your GPU. Defaults to 32.
+
+    Returns:
+        A dictionary mapping doc_id to its embedding vector.
+    """
+    print(f"Embedding corpus with {len(documents)} documents using {strategy.__class__.__name__}...")
+
+    # Prepare lists of IDs and texts to maintain order
+    doc_ids = list(documents.keys())
+    texts_to_embed = list(documents.values())
+    
+    # Delegate the entire batch to the strategy's batch method
+    embeddings = strategy.embed_batch(
+        texts_to_embed,  
+        model, 
+        tokenizer, 
+        embedding_type=embedding_type, 
+        batch_size=batch_size
+    )
+    
+    # Combine the IDs with their corresponding embeddings
+    return {doc_id: embedding for doc_id, embedding in zip(doc_ids, embeddings)}
+
 
 def run_search_and_evaluate(
     queries: List[Dict[str, str]],
