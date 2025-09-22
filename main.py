@@ -5,6 +5,7 @@ from transformers import AutoTokenizer
 
 from evaluation.benchmark import (
     embed_corpus,
+    embed_corpus_batch,
     load_documents,
     load_mock_data,
     load_queries,
@@ -67,8 +68,8 @@ def main():
             print(f"\n--- Benchmarking Strategy: {strategy_name} ---")
 
             # Embed the corpus with the current strategy
-            doc_embeddings = embed_corpus(documents, strategy, model, tokenizer)
-
+            # doc_embeddings = embed_corpus(documents, strategy, model, tokenizer)
+            doc_embeddings = embed_corpus_batch(documents, strategy, model, tokenizer)
             # Run search and get the average nDCG score
             avg_ndcg = run_search_and_evaluate(queries, doc_embeddings, model, k=NDCG_K)
 
