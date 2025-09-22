@@ -12,7 +12,7 @@ from evaluation.benchmark import (
 )
 from evaluation.plotter import plot_results
 from evaluation.strategies import ChunkAndAverageStrategy, TruncationStrategy
-
+import torch
 
 def main():
     """Main function to run the benchmark."""
@@ -49,6 +49,9 @@ def main():
     for model_name in MODEL_NAMES:
         print(f"\n--- Loading and benchmarking model: {model_name} ---")
         model = SentenceTransformer(model_name)
+        if torch.cuda.is_availible():
+            model = model.to("cuda")
+
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         results_for_model = {}
