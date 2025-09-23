@@ -86,7 +86,7 @@ def embed_corpus_batch(
     model: SentenceTransformer,
     tokenizer: AutoTokenizer,
     embedding_type: Literal["query", "document"] = "document",
-    batch_size: int = 32,
+    batch_size: int = 64,
 ) -> Dict[str, np.ndarray]:
     """
     Embeds the entire corpus of documents using a given strategy in batch mode for performance.
@@ -121,6 +121,7 @@ def embed_corpus_batch(
     return {doc_id: embedding for doc_id, embedding in zip(doc_ids, embeddings)}
 
 
+
 def run_search_and_evaluate(
     queries: List[Dict[str, str]],
     doc_embeddings: Dict[str, np.ndarray],
@@ -128,11 +129,11 @@ def run_search_and_evaluate(
     k: int = 10,
 ) -> float:
     """
-    Runs queries against the corpus and calculates the mean nDCG@k score.
+    Runs queries against the corpus and calculates Mean Reciprocal Rank (MRR@k).
     """
-    ndcg_scores = []
+    reciprocal_ranks = []
 
-    # Prepare corpus for semantic search
+    # Prepare corpus
     corpus_ids = list(doc_embeddings.keys())
     corpus_embeddings = np.array([doc_embeddings[cid] for cid in corpus_ids])
 
@@ -140,27 +141,19 @@ def run_search_and_evaluate(
         query_text = query_info["query"]
         ground_truth_id = query_info["source_doc_id"]
 
-        # Embed the query (queries are short, no strategy needed)
+        # Encode the query
         query_embedding = model.encode_query(query_text, normalize_embeddings=True)
 
-        # Perform semantic search
+        # Semantic search
         hits = util.semantic_search(query_embedding, corpus_embeddings, top_k=k)[0]
-
-        # Get the ranked list of document IDs
         retrieved_doc_ids = [corpus_ids[hit["corpus_id"]] for hit in hits]
 
-        # Calculate relevance score for nDCG
-        # Relevance is 1 if the doc is the ground truth, 0 otherwise.
-        relevance = [
-            1 if doc_id == ground_truth_id else 0 for doc_id in retrieved_doc_ids
-        ]
+        # Check where the ground truth appears in the ranking
+        if ground_truth_id in retrieved_doc_ids:
+            rank = retrieved_doc_ids.index(ground_truth_id) + 1  # ranks start at 1
+            reciprocal_ranks.append(1.0 / rank)
+        else:
+            reciprocal_ranks.append(0.0)  # not found in top-k
 
-        # We need to use scikit-learn's nDCG, which expects a 2D array.
-        # The "true" relevance score is a perfect ranking (the correct doc at the top).
-        true_relevance = [[1.0] + [0.0] * (k - 1)]
-        actual_relevance = [np.array(relevance)]
-
-        score = ndcg_score(true_relevance, actual_relevance, k=k)
-        ndcg_scores.append(score)
-
-    return np.mean(ndcg_scores)
+    # Return the mean across all queries
+    return np.mean(reciprocal_ranks)

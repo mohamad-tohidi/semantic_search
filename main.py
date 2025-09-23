@@ -4,7 +4,7 @@ from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer
 
 from evaluation.benchmark import (
-    embed_corpus,
+    # embed_corpus,
     embed_corpus_batch,
     load_documents,
     load_mock_data,
@@ -24,7 +24,7 @@ def main():
     ]
     DATA_DIR = "./test_dataset"
     QUERIES_PATH = "./test_dataset/queries.jsonl"
-    NDCG_K = 10
+    K = 3
 
     # --- 1. Load Data ---
     if os.path.exists(DATA_DIR) and os.path.exists(QUERIES_PATH):
@@ -71,10 +71,10 @@ def main():
             # doc_embeddings = embed_corpus(documents, strategy, model, tokenizer)
             doc_embeddings = embed_corpus_batch(documents, strategy, model, tokenizer)
             # Run search and get the average nDCG score
-            avg_ndcg = run_search_and_evaluate(queries, doc_embeddings, model, k=NDCG_K)
+            avg_score = run_search_and_evaluate(queries, doc_embeddings, model, k=K)
 
-            results_for_model[strategy_name] = avg_ndcg
-            print(f"Average nDCG@{NDCG_K} for {strategy_name}: {avg_ndcg:.4f}")
+            results_for_model[strategy_name] = avg_score
+            print(f"Average MRR@{K} for {strategy_name}: {avg_score:.4f}")
 
         all_results[model_name] = results_for_model
 

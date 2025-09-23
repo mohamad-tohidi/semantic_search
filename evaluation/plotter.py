@@ -51,7 +51,7 @@ def plot_results(results: Dict[str, Dict[str, float]]):
             )
 
     # Add labels, title, and legend
-    ax.set_ylabel("nDCG@10 Score", fontsize=12)
+    ax.set_ylabel("MRR@10 Score", fontsize=12)
     ax.set_title("Long-Text Embedding Strategy Benchmark by Model", fontsize=16)
     ax.set_xticks(x)
     ax.set_xticklabels(all_models, rotation=25, ha="right")

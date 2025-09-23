@@ -5,8 +5,8 @@ from typing import List, Literal, Dict
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from transformers import AutoTokenizer
-from tqdm import trange # Use trange for nested loops if needed
+# from transformers import AutoTokenizer
+# from tqdm import trange # Use trange for nested loops if needed
 
 # --- 1. Modified Abstract Strategy Interface ---
 
