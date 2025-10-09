@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+qdrant_db/*
 # C extensions
 *.so
 query-1.json
