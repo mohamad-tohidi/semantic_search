@@ -8,4 +8,5 @@ dependencies = [
     "elasticsearch==8.*",
     "python-dotenv>=1.1.1",
     "qdrant-client>=1.15.1",
+    "sentence-transformers>=5.1.1",
 ]
