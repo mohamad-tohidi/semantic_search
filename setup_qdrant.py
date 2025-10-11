@@ -14,13 +14,14 @@ from typing import List, Dict, Any
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
-from qdrant_client.http.models import Payload
+from qdrant_client.models import Payload
 from transformers import AutoTokenizer
+from qdrant_client.http.models import QueryResponse
 
 from models import QARecord
 
 
-model_name = "intfloat/e5-large"
+model_name = "intfloat/e5-small"
 
 
 def load_data(filepath: str) -> List[QARecord]:
@@ -102,7 +103,7 @@ def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
     
 
     # Collection metadata
-    collection_metadata = Payload({
+    collection_metadata: Payload = {
         "description": "Persian QA dataset from ParsaQA with chunked questions and answers",
         "embedding_model": model_name,
         "chunk_size": "256 tokens",
@@ -112,7 +113,7 @@ def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
         "vector_size": model.get_sentence_embedding_dimension(),
         "content_type": "QA chunks (questions and answers)",
         "indexing_date": "2025"
-    })
+    }
     
     try:
         client.create_collection(
@@ -121,7 +122,12 @@ def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
                 size=model.get_sentence_embedding_dimension(),  
                 distance=Distance.COSINE
             ),
-            metadata=collection_metadata
+
+            # NOTE: at the time that i am writing this code
+            # this feature is not yet supported
+            # but i know that it will be supported soon
+            # so we comment it out for now
+            # metadata=collection_metadata
         )
         print(f"Created collection: {collection_name}")
         print("Collection metadata added successfully")
@@ -175,14 +181,15 @@ def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
         query=query_embedding.tolist(),
         limit=5
     )
+
     
     print(f"Search results for '{test_query}':")
-    for i, result in enumerate(results, 1):
-        print(f"{i}. Score: {result.score:.3f}")
-        print(f"   Elastic ID: {result.payload['elastic_id']}")
-        print(f"   Text: {result.payload['text'][:100]}...")
-        print()
-
+    # for i, result in enumerate(results, 1):
+    #     print(f"{i}. Score: {result.score:.3f}")
+    #     print(f"   Elastic ID: {result.payload['elastic_id']}")
+    #     print(f"   Text: {result.payload['text'][:100]}...")
+    #     print()
+    print("here are the results\n", results)
 
 def main():
     """Main function with simple 4-step flow."""

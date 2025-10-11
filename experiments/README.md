@@ -1,16 +1,53 @@
-in here
-we run some experiments
+# Chunk Size Experiment
 
-to figure out some stuff
+This experiment finds the best chunk size and overlap configuration for semantic search.
 
-for example
+## How it works
 
-what is the optimal number for Chunk size and overlap?
+1. **Load sample data** from `sample_es_data.json`
+2. **Create multiple Qdrant collections** with different chunk configurations:
+   - 128 tokens, 25 overlap
+   - 256 tokens, 50 overlap  
+   - 512 tokens, 100 overlap
+   - 1024 tokens, 200 overlap
+3. **Load test questions** from `test_questions.csv`
+4. **Run searches** on each collection
+5. **Calculate F1 scores** based on finding expected answers
+6. **Find the best configuration**
 
-well in order to find the answer to that question,
+## Usage
 
-we have to run an experiment
+1. Make sure you have `sample_es_data.json` in the parent directory
+2. Create `test_questions.csv` with your test questions:
+   ```csv
+   question,expected_answer,elastic_id
+   وصی کیست؟,كسى را كه به او وصیت مى‏كنند «وصی» مى‏گويند.,14498
+   ```
+3. Run the experiment:
+   ```bash
+   cd experiments
+   python find_best_chunk_size.py
+   ```
 
-and see the results
+## Test Questions CSV Format
 
-then we will find out
+The CSV file should have these columns:
+- `question`: The search query
+- `expected_answer`: The expected answer text
+- `elastic_id`: The ID of the record that should be found
+
+## Results
+
+The script will show:
+- Average F1 score for each configuration
+- The best chunk size and overlap combination
+- Detailed results for analysis
+
+## Simple and Readable
+
+The code follows these principles:
+- No nested loops
+- Clear function names
+- Simple data structures
+- Easy to understand flow
+- Human-readable output
