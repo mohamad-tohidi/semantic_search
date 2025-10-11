@@ -1,6 +1,8 @@
 import os
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
+from models import QARecord
+
 
 load_dotenv()
 
@@ -11,14 +13,6 @@ ES_URL = os.getenv("ES_URL")
 
 
 
-query = {
-    "query": {
-        "match_all": {}
-    },
-    "size": 10,
-    "_source": {"excludes": ["*_vector"]},
-}
-
 es = Elasticsearch(
     hosts=[{"host": ES_URL, "port": 9200, "scheme": "https"}],
     basic_auth=(ES_USER, ES_PASSWORD),
@@ -28,12 +22,51 @@ es = Elasticsearch(
 
 INDEX_NAME = "parsaqa_questions_003"
 
-response = es.search(
+NUM_SHORTEST = int(os.getenv("NUM_SHORTEST", "5"))
+NUM_LONGEST = int(os.getenv("NUM_LONGEST", "5"))
+SAMPLE_SIZE = int(os.getenv("SAMPLE_SIZE", "2000"))
+SEARCH_REQUEST_TIMEOUT = int(os.getenv("SEARCH_REQUEST_TIMEOUT", "60"))
+
+source_filter = {"excludes": ["*_vector"]}
+
+random_sample_query = {"match_all": {}}
+
+sampled = es.search(
     index=INDEX_NAME,
-    body=query,
+    size=SAMPLE_SIZE,
+    query=random_sample_query,
+    _source=source_filter,
+    track_total_hits=False,
+    request_timeout=SEARCH_REQUEST_TIMEOUT,
 )
 
-print(response)
+def extract_length(doc_source):
+    try:
+        return len(doc_source["question"]["text"]["fa"])  
+    except Exception:
+        return 0
+
+hits = sampled.get("hits", {}).get("hits", [])
+scored = [(extract_length(h.get("_source", {})), h) for h in hits]
+scored.sort(key=lambda x: x[0])
+
+shortest_hits = [h for _, h in scored[:NUM_SHORTEST]]
+longest_hits = [h for _, h in scored[-NUM_LONGEST:]] if NUM_LONGEST > 0 else []
+
+seen = set()
+combined_hits = []
+for h in shortest_hits + longest_hits:
+    _id = h.get("_id")
+    if _id not in seen:
+        seen.add(_id)
+        combined_hits.append(h)
+
+
+data = combined_hits[-1]
+qa_record = QARecord.model_validate(data["_source"])
+
+print(qa_record)
+
 
 
 # qa_questions_003', '_id': '9809', '_score': 1.0, '_source': {'metadata': {'viewer': 0, 'was_not_question': False, 'title': 'فردى
