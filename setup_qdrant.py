@@ -1,5 +1,10 @@
 """
-Simple script to setup Qdrant and index chunked texts.
+this script
+will create a collection in qdrant
+from a given json file
+
+it will embed the texts and do other necessary things
+
 """
 
 import json
@@ -15,7 +20,7 @@ from transformers import AutoTokenizer
 from models import QARecord
 
 
-model_name = "intfloat/e5-small"
+model_name = "intfloat/e5-large"
 
 
 def load_data(filepath: str) -> List[QARecord]:

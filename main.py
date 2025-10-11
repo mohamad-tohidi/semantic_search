@@ -4,7 +4,7 @@ Simple script to query the Qdrant vector database.
 
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
-from qdrant_client.models import PointsList, PointStruct, ScoredPoint
+from qdrant_client.models import PointsList, ScoredPoint
 
 
 def search_qa_database(query: str, limit: int = 5):
