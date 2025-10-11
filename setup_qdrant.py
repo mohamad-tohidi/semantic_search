@@ -9,9 +9,13 @@ from typing import List, Dict, Any
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
+from qdrant_client.http.models import Payload
 from transformers import AutoTokenizer
 
 from models import QARecord
+
+
+model_name = "intfloat/e5-small"
 
 
 def load_data(filepath: str) -> List[QARecord]:
@@ -54,7 +58,7 @@ def extract_texts(records: List[QARecord]) -> List[Dict[str, Any]]:
 def chunk_texts(texts: List[Dict[str, Any]], max_tokens: int = 256, overlap: int = 50) -> List[Dict[str, Any]]:
     """Step 3: Chunk texts with overlap."""
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained("intfloat/e5-small")
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     
     chunked_texts = []
     
@@ -89,18 +93,33 @@ def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
 
 
     print("Loading E5 model...")
-    model = SentenceTransformer("intfloat/e5-small")
+    model = SentenceTransformer(model_name)
     
 
+    # Collection metadata
+    collection_metadata = Payload({
+        "description": "Persian QA dataset from ParsaQA with chunked questions and answers",
+        "embedding_model": model_name,
+        "chunk_size": "256 tokens",
+        "chunk_overlap": "50 tokens",
+        "source": "Elasticsearch parsaqa_questions_003 index",
+        "created_by": "Tohidi @ Hamta",
+        "vector_size": model.get_sentence_embedding_dimension(),
+        "content_type": "QA chunks (questions and answers)",
+        "indexing_date": "2025"
+    })
+    
     try:
         client.create_collection(
             collection_name=collection_name,
             vectors_config=VectorParams(
                 size=model.get_sentence_embedding_dimension(),  
                 distance=Distance.COSINE
-            )
+            ),
+            metadata=collection_metadata
         )
         print(f"Created collection: {collection_name}")
+        print("Collection metadata added successfully")
     except Exception as e:
         print(f"Collection might already exist: {e}")
     
