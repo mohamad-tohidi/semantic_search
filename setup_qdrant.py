@@ -3,7 +3,6 @@ Simple script to setup Qdrant and index chunked texts.
 """
 
 import json
-import uuid
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -147,9 +146,9 @@ def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
     test_query = "ازدواج موقت"
     query_embedding = model.encode([test_query], convert_to_tensor=False)[0]
     
-    results = client.search(
+    results = client.query_points(
         collection_name=collection_name,
-        query_vector=query_embedding.tolist(),
+        query=query_embedding.tolist(),
         limit=5
     )
     
