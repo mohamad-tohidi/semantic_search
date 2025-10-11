@@ -84,7 +84,7 @@ def chunk_texts(texts: List[Dict[str, Any]], max_tokens: int = 256, overlap: int
 
 def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
     """Step 4: Index chunked texts to Qdrant."""
-    client = QdrantClient("./qdrant_db")
+    client = QdrantClient(path="./qdrant_db")
     collection_name = "parsa_003"
     
 
@@ -122,7 +122,7 @@ def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
         points = []
         for j, (text_item, embedding) in enumerate(zip(batch, embeddings)):
             point = PointStruct(
-                id=str(uuid.uuid4()),
+                id=int(text_item['elastic_id']),
                 vector=embedding.tolist(),
                 payload={
                     'text': text_item['text'],
