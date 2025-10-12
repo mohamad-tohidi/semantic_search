@@ -50,7 +50,7 @@ language = "Persian/Farsi"
 
 # Generate questions
 all_questions = []
-for idx, (data, answer) in tqdm(enumerate(long_answers), desc="generating questions from chunks"):
+for idx, (data, answer) in enumerate(long_answers):
     chunks = chunk_text(answer)
     for chunk in tqdm(chunks, desc="generating for chunks"):
         question = tool.generate_question_from_text(text=chunk, output_lang=language)
