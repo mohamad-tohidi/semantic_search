@@ -207,6 +207,19 @@ wheels = [
 ]
 
 [[package]]
+name = "hamtaa-texttools"
+version = "1.0.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "openai" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6c/ab/b72ddf6fb75efe3263dc4eaf0afea303d4b3822225bb05167f4f199ef2e3/hamtaa_texttools-1.0.4.tar.gz", hash = "sha256:d81db505e5469132afaeff2177f9def0d68d8390066281286caa94829064eb17", size = 21054, upload-time = "2025-09-22T10:23:50.349Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3f/9f/cdabd141c83510600ba05bded817881406375320d65fbb501b0252ebfc81/hamtaa_texttools-1.0.4-py3-none-any.whl", hash = "sha256:c77d33566bb1439704b0af58fcd2bd47b25036f0274c38176e063f09625cabf9", size = 30671, upload-time = "2025-09-22T10:23:48.247Z" },
+]
+
+[[package]]
 name = "hf-xet"
 version = "1.1.10"
 source = { registry = "https://pypi.org/simple" }
@@ -641,7 +654,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "2.3.0"
+version = "1.97.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -653,9 +666,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/de/90/8f26554d24d63ed4f94d33c24271559863223a67e624f4d2e65ba8e48dca/openai-2.3.0.tar.gz", hash = "sha256:8d213ee5aaf91737faea2d7fc1cd608657a5367a18966372a3756ceaabfbd812", size = 589616, upload-time = "2025-10-10T01:12:50.851Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a6/57/1c471f6b3efb879d26686d31582997615e969f3bb4458111c9705e56332e/openai-1.97.1.tar.gz", hash = "sha256:a744b27ae624e3d4135225da9b1c89c107a2a7e5bc4c93e5b7b5214772ce7a4e", size = 494267, upload-time = "2025-07-22T13:10:12.607Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9c/5b/4be258ff072ed8ee15f6bfd8d5a1a4618aa4704b127c0c5959212ad177d6/openai-2.3.0-py3-none-any.whl", hash = "sha256:a7aa83be6f7b0ab2e4d4d7bcaf36e3d790874c0167380c5d0afd0ed99a86bd7b", size = 999768, upload-time = "2025-10-10T01:12:48.647Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/35/412a0e9c3f0d37c94ed764b8ac7adae2d834dbd20e69f6aca582118e0f55/openai-1.97.1-py3-none-any.whl", hash = "sha256:4e96bbdf672ec3d44968c9ea39d2c375891db1acc1794668d8149d5fa6000606", size = 764380, upload-time = "2025-07-22T13:10:10.689Z" },
 ]
 
 [[package]]
@@ -1154,6 +1167,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "elasticsearch" },
+    { name = "hamtaa-texttools" },
     { name = "openai" },
     { name = "python-dotenv" },
     { name = "qdrant-client" },
@@ -1163,7 +1177,8 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "elasticsearch", specifier = "==8.*" },
-    { name = "openai", specifier = ">=2.3.0" },
+    { name = "hamtaa-texttools", specifier = "==1.0.4" },
+    { name = "openai", specifier = ">=1.97.1" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "qdrant-client", specifier = ">=1.15.1" },
     { name = "sentence-transformers", specifier = ">=5.1.1" },

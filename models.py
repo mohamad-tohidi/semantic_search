@@ -62,4 +62,3 @@ class QARecord(FlexibleModel):
     processed_by: Optional[str] = None
     processed_at: Optional[str] = None
 
-
