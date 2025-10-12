@@ -49,13 +49,13 @@ language = "Persian/Farsi"
 
 # Generate questions
 all_questions = []
-for idx, (data, answer) in tqdm(enumerate(long_answers), desc="generating questions from chunks"):
+for idx, (data, answer) in tqdm(enumerate(long_answers[:3]), desc="generating questions from chunks"):
     chunks = chunk_text(answer)
     for chunk in chunks:
         question = tool.generate_question_from_text(text=chunk, output_lang=language)
         all_questions.append({
             'id': data.elastic_id,
-            'question': question
+            'question': question["result"]
         })
 
 print(f"Generated {len(all_questions)} questions.")
