@@ -27,7 +27,10 @@ def get_elasticsearch_client():
 def extract_length(doc_source):
     """Extract text length for sorting."""
     try:
-        return len(doc_source["question"]["text"]["fa"])  
+        # this here returns the length of the question
+        # return len(doc_source["question"]["text"]["fa"])  
+
+        return len(doc_source["answers"][0]["text"]["fa"])
     except Exception:
         return 0
 
@@ -125,7 +128,7 @@ def fetch_and_process_data():
     INDEX_NAME = "parsaqa_questions_003"
     NUM_SHORTEST = 50
     NUM_LONGEST = 50
-    SAMPLE_SIZE = 20000
+    SAMPLE_SIZE = 200000
     
     source_filter = {"excludes": ["*_vector"]}
     
