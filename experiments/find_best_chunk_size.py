@@ -288,7 +288,7 @@ class ChunkExperiment:
                 search_results = self.search_collection(
                     test_q.question, 
                     config.collection_name, 
-                    limit=5
+                    limit=10
                 )
                 f1_score = self.calculate_f1_score(test_q, search_results)
                 f1_scores.append(f1_score)
