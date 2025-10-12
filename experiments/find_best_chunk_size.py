@@ -47,7 +47,7 @@ class ChunkExperiment:
     
     def __init__(self, model_name: str = "intfloat/e5-small"):
         self.model_name = model_name
-        self.model = SentenceTransformer(model_name)
+        self.model = SentenceTransformer(model_name, device="cuda")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.client = QdrantClient(path="./qdrant_db")
         
