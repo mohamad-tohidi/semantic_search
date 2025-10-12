@@ -13,6 +13,13 @@ ES_USER = os.getenv("ES_USER")
 ES_PASSWORD = os.getenv("ES_PASSWORD")
 ES_URL = os.getenv("ES_URL")
 
+INDEX_NAME = "parsaqa_questions_003"
+NUM_SHORTEST = 5
+NUM_LONGEST = 95
+SAMPLE_SIZE = 200000
+    
+
+
 
 def get_elasticsearch_client():
     """Create and return Elasticsearch client."""
@@ -125,11 +132,7 @@ def fetch_and_process_data():
     """Main function to fetch, validate, and save data."""
     es = get_elasticsearch_client()
     
-    INDEX_NAME = "parsaqa_questions_003"
-    NUM_SHORTEST = 50
-    NUM_LONGEST = 50
-    SAMPLE_SIZE = 200000
-    
+
     source_filter = {"excludes": ["*_vector"]}
     
     # Fetch data using scroll API
