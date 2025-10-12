@@ -21,7 +21,7 @@ from qdrant_client.http.models import QueryResponse
 from models import QARecord
 
 
-model_name = "intfloat/e5-small"
+model_name = "intfloat/e5-large"
 
 
 def load_data(filepath: str) -> List[QARecord]:

@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
-from qdrant_client.http.models import Payload
+from qdrant_client.http.models import Payload, PointStruct
 from qdrant_client.http.models import QueryResponse
 from transformers import AutoTokenizer
 
@@ -160,38 +160,38 @@ class ChunkExperiment:
         batch_size = 10
         total_indexed = 0
         
-        # for i in range(0, len(chunked_texts), batch_size):
-        #     batch = chunked_texts[i:i + batch_size]
+        for i in range(0, len(chunked_texts), batch_size):
+            batch = chunked_texts[i:i + batch_size]
             
-        #     # Extract texts for embedding
-        #     batch_texts = [item['text'] for item in batch]
+            # Extract texts for embedding
+            batch_texts = [item['text'] for item in batch]
             
-        #     # Create embeddings
-        #     embeddings = self.model.encode(batch_texts, convert_to_tensor=False)
+            # Create embeddings
+            embeddings = self.model.encode(batch_texts, convert_to_tensor=False)
             
-        #     # Create points
-        #     points = []
-        #     for j, (text_item, embedding) in enumerate(zip(batch, embeddings)):
-        #         point = PointStruct(
-        #             id=total_indexed + j,
-        #             vector=embedding.tolist(),
-        #             payload={
-        #                 'text': text_item['text'],
-        #                 'elastic_id': text_item['elastic_id'],
-        #                 'type': text_item['type'],
-        #                 'chunk_id': text_item['chunk_id']
-        #             }
-        #         )
-        #         points.append(point)
+            # Create points
+            points = []
+            for j, (text_item, embedding) in enumerate(zip(batch, embeddings)):
+                point = PointStruct(
+                    id=total_indexed + j,
+                    vector=embedding.tolist(),
+                    payload={
+                        'text': text_item['text'],
+                        'elastic_id': text_item['elastic_id'],
+                        'type': text_item['type'],
+                        'chunk_id': text_item['chunk_id']
+                    }
+                )
+                points.append(point)
             
-        #     # Store in Qdrant
-        #     self.client.upsert(
-        #         collection_name=config.collection_name,
-        #         points=points
-        #     )
+            # Store in Qdrant
+            self.client.upsert(
+                collection_name=config.collection_name,
+                points=points
+            )
             
-        #     total_indexed += len(points)
-        #     print(f"Indexed {total_indexed}/{len(chunked_texts)} chunks")
+            total_indexed += len(points)
+            print(f"Indexed {total_indexed}/{len(chunked_texts)} chunks")
         
         print(f"Successfully indexed {total_indexed} chunks to {config.collection_name}")
     
@@ -315,7 +315,7 @@ class ChunkExperiment:
 
 def main():
     """Main function to run the experiment."""
-    experiment = ChunkExperiment()
+    experiment = ChunkExperiment(model_name="intfloat/e5-large")
     
     # Run experiment
     sample_file = "./sample_es_data.json"
