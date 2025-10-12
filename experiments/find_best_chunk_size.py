@@ -157,7 +157,7 @@ class ChunkExperiment:
             print(f"Collection might already exist: {e}")
         
         # Index texts in batches
-        batch_size = 10
+        batch_size = 100
         total_indexed = 0
         
         for i in range(0, len(chunked_texts), batch_size):
