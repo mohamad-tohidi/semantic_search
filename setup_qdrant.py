@@ -189,7 +189,7 @@ def index_to_qdrant(chunked_texts: List[Dict[str, Any]]):
     #     print(f"   Elastic ID: {result.payload['elastic_id']}")
     #     print(f"   Text: {result.payload['text'][:100]}...")
     #     print()
-    print("here are the results\n", results)
+    print("here are the results\n", results.points)
 
 def main():
     """Main function with simple 4-step flow."""
