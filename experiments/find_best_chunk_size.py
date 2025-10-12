@@ -53,7 +53,7 @@ class ChunkExperiment:
         
         # Test configurations
         self.configs = [
-            # ChunkConfig(128, 25, "chunk_128_25"),
+            ChunkConfig(128, 25, "chunk_128_25"),
             ChunkConfig(256, 50, "chunk_256_50"),
             ChunkConfig(512, 100, "chunk_512_100"),
         ]
