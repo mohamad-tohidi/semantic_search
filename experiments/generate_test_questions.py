@@ -1,3 +1,4 @@
+import csv
 import json
 from openai import OpenAI
 from dotenv import load_dotenv 
@@ -49,15 +50,21 @@ language = "Persian/Farsi"
 
 # Generate questions
 all_questions = []
-for idx, (data, answer) in tqdm(enumerate(long_answers[:3]), desc="generating questions from chunks"):
+for idx, (data, answer) in tqdm(enumerate(long_answers), desc="generating questions from chunks"):
     chunks = chunk_text(answer)
-    for chunk in chunks:
+    for chunk in tqdm(chunks, desc="generating for chunks"):
         question = tool.generate_question_from_text(text=chunk, output_lang=language)
         all_questions.append({
-            'id': data.elastic_id,
+            'elastic_id': data.elastic_id,
             'question': question["result"]
         })
 
-print(f"Generated {len(all_questions)} questions.")
-print("Sample questions:", all_questions[:3])
 
+# Save to CSV
+csv_file = './experiments/test_questions.csv'
+with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+    writer = csv.DictWriter(f, fieldnames=['elastic_id', 'question'])
+    writer.writeheader()
+    writer.writerows(all_questions)
+
+print(f"Saved {len(all_questions)} questions to {csv_file}.")
